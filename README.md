@@ -14,9 +14,8 @@ Voraussetzung:
     PhP5
     MySQL Datenbank
     phpMyAdmin
-    Für die Grafik: JPGRAPH
-    Ich emppfehle MobaXterm für den Zugriff von Windows auf den raspberry
-    wesentlich komfortabler als Putty
+    Für die Grafik: JPGRAPH oder google graphic
+    Ich emppfehle MobaXterm für den Zugriff von Windows auf den raspberry- wesentlich komfortabler als Putty
     1-Wire Sensoren
 
 
@@ -24,11 +23,11 @@ Voraussetzung:
 Die Software wurde in Python geschrieben.
 In dem Paket sind folgende Dateien enthalten:
 
-    avrio.py                 Das Hauptprogram
+    avrio.py            Das Hauptprogram
     avrio_database.py   Ein Modul mit den Funktionen für die Datenbank
-    avrio_html.py          Ein Modul, um eine HTML Datei zu erzeugen
-    avr-graph.php         Ein PHP-Script, welches, den Temperaturverlauf als Grafik zeigt
-    avrio-writedb.sh      Des kleines shell script, welches von cron aufgerufen wird
+    avrio_html.py       Ein Modul, um eine HTML Datei zu erzeugen
+    avr-graph.php       Ein PHP-Script, welches, den Temperaturverlauf als Grafik zeigt
+    avrio-writedb.sh    Des kleines shell script, welches von cron aufgerufen wird
 
 
 Wenn avrio.py das erste Mal gestartet wird, werden die Parameter abgefragt und eine Konfigurationsdatei erzeugt (avrio-config.txt).
@@ -36,38 +35,40 @@ Z.b. User/Pw für MySQL und die Datenbank-Parameter.
 Anschließend erzeugt das Programm die Datenbank und die Datenbank-Tabelle.
 Die bei der Installation angeschlossenen 1-Wire Sensoren werden automatisch erkannt und in die Konfigurations-Datei geschrieben.
 
-[Bild: avrio-1.png]
+![](http://thomas.hoeser-medien.de/pictures/avrio-1.png)
 
 
 Mit einem Editor (z.B. nano) erfolgt in der Datei die Zuordnung zu den Datenbankfeldern.
-[Bild: avrio-2.png]
+
+![](http://thomas.hoeser-medien.de/pictures/avrio-2.png)
 
 
 Als nächstes wird das Hauptprogram gestartet, welches ohne die Angabe von Parametern die Sensoren ausliest und die Daten in die Datenbank schreibt:
 > python avrio.py
 
-[Bild: avrio-3.png]
+![](http://thomas.hoeser-medien.de/pictures/avrio-3.png)
 
 
 Die Daten können auf mehrere Arten angezeigt werden:
 Über die Kommandozeile die letzten 3 Einträge aufrufen
 > python avrio.py -r 3
 
-[Bild: avrio-4.png]
+![](http://thomas.hoeser-medien.de/pictures/avrio-4.png)
 
 
 Über den Webserver kann man eine Seite aufrufen, die das Programm erzeugt:
 > python avrio.py -w
 Dann im Browser: http://192.168.178.60/avrweb/avr-single.html
 
-[Bild: avrio-5.png]
+![](http://thomas.hoeser-medien.de/pictures/avrio-5.png)
 
 
 Über den Webserver kann man eine Seite aufrufen, die eine Grafik erzeugt:
 http://192.168.178.60/avrweb/avr-graph.php
 
-[Bild: avrio-6.png]
+![](http://thomas.hoeser-medien.de/pictures/avrio-6.png)
 
 
 
 Falls jemand Fehler findet oder Anregung hat, bitte melden.
+
