@@ -1,6 +1,6 @@
 <?php
 // Read MySQL database and build diagram based on google graphics
-// 2013-04-0 V0.6 by Thomas Hoeser
+// 2013-12-28 V0.7 by Thomas Hoeser
 //
 // syntax: avr-google.php[?scope={day|week|month|year}]&[?group={air|water}]
 // avr-google.php?scope=day
@@ -21,18 +21,27 @@ fwrite($fh, "----------------------------------------------- ");fwrite($fh, "\n"
 // default Values used when config file cannot be found
 $dbhost  = "127.0.0.1";
 $dbuser  = "root";
-$dbpass  = "rootpassword";
+$dbpass  = "nxt2008";
 $dbname  = "avrio";
 $dbtable = "avrdat";
 $dbfield = "Innen, Aussen, Zimmer, Balkon, Wasser, WW_Speicher, Vorlauf, Ruecklauf";
+$dbf_avg = "AVG(Innen), AVG(Aussen), AVG(Zimmer), AVG(Balkon), AVG(Wasser), AVG(WW_Speicher), AVG(Vorlauf), AVG(Ruecklauf)";
 $sql6    = "Interval 24 HOUR";
 
 $sql1 = "SELECT ";
-$sql2 = $dbfield;
+$sql2 = $dbf_avg;
 $sql3 = " , UNIX_TIMESTAMP(dattim) AS date FROM ";
 $sql4 = $dbtable;
 $sql5 = " WHERE dattim >= Date_Sub(CURRENT_TIMESTAMP(), ";
 $sql7 = " ) ORDER BY dattim";
+
+// TAG   - SELECT Aussen, Wintergarten, Zimmer, Terrasse, Pool, WW_Speicher, Vorlauf, Ruecklauf , UNIX_TIMESTAMP(dattim) AS date
+//         FROM avrdat 
+//         WHERE dattim >= Date_Sub(CURRENT_TIMESTAMP(), Interval 24 HOUR )
+//         ORDER BY dattim
+// WOCHE - SELECT Aussen, Wintergarten, Zimmer, Terrasse, Pool, WW_Speicher, Vorlauf, Ruecklauf , UNIX_TIMESTAMP(dattim) AS date FROM avrdat WHERE dattim >= Date_Sub(CURRENT_TIMESTAMP(), Interval 7 DAY ) ORDER BY dattim
+// MONAT - SELECT Aussen, Wintergarten, Zimmer, Terrasse, Pool, WW_Speicher, Vorlauf, Ruecklauf , UNIX_TIMESTAMP(dattim) AS date FROM avrdat WHERE dattim >= Date_Sub(CURRENT_TIMESTAMP(), Interval 1 MONTH ) ORDER BY dattim
+// JAHR
 
 // Select Ort, avg(Gewinn) from Tabelle group by Ort
 
@@ -40,6 +49,15 @@ $group_air   = "Aussen,Wintergarten,Zimmer,Terrasse";
 $group_water = "WW_Speicher,Vorlauf,Ruecklauf";
 $group1      = 1;
 $group2      = 1;
+
+// read php-script options provided when calling this script
+fwrite($fh, "read options      - ");
+// Handle command line arguments
+$time_scope = $_GET ['scope'];
+fwrite($fh, "scope - ".$time_scope."\n");
+fwrite($fh, "----------------------------------------------- ");fwrite($fh, "\n"); 
+
+
 // read config file
 $configFile = "avrio-config.txt";
 fwrite($fh, $configFile."\n");
@@ -48,7 +66,7 @@ $init = 0;
 $lines = file($configFile);
 foreach ($lines as $line_num ) //=> $line)
 {
-  // fwrite($fh,"read line: "); 
+  // fwrite($fh,"read line: ");
   $zeile    = explode (' ', $line_num);
   $token    = $zeile[0];
   $val1     = rtrim($zeile[1]);  // rtrim will surpress CR at line end
@@ -62,32 +80,45 @@ foreach ($lines as $line_num ) //=> $line)
    case 'Table'       : $dbtable     = $val1; break;
    case 'group_air'   : $group_air   = $val1; break;
    case 'group_water' : $group_water = $val1; break;
-   case 'dbfield' : if($init == 0) {$dbfield = $val1; $init = 1;     }
-                    else           {$dbfield = $dbfield.', '.$val1;  }
-                    break;            
+   case 'dbfield' :
+   					// fwrite($fh, "dbfield - ".$val1."\n");
+   					if($init == 0) {
+						if ('day'   == $time_scope)
+							{ $dbfield = $val1; $init = 1; }
+						else
+							{ $dbfield = 'AVG('.$val1.') as '.$val1.' '; $init = 1;}
+						}
+                    else  {
+						if ('day'   == $time_scope)
+							{ $dbfield = $dbfield.', '.$val1; }
+						else
+							{ $dbfield = $dbfield.', AVG('.$val1.') as '.$val1.' ';}
+						}
+                    break;
   }
 }
 
+// Problem: sql statement needs AVG function.
 fwrite($fh, 'dbfield >'.$dbfield."<\n");
-if($init == 1) { 
+if($init == 1) {
   fwrite($fh, "using config file\n");
-  $sql2 = $dbfield; 
+  $sql2 = $dbfield;
   }
 
 fwrite($fh, "database options: ");
 fwrite($fh, $dbhost.' / '.$dbuser.' / '.$dbpass.' / '.$dbname);
-fwrite($fh, "\n\n"); 
-
-// read options provided when calling this php script
-fwrite($fh, "read options      - ");
-// Handle command line arguments
-$time_scope = $_GET ['scope'];
-fwrite($fh, "scope - ".$time_scope."\n");
+fwrite($fh, "\n\n");
 
 if ('day'   == $time_scope) { $sql6 = "Interval 24 HOUR"; }
-if ('week'  == $time_scope) { $sql6 = "Interval 7 DAY";   }
-if ('month' == $time_scope) { $sql6 = "Interval 1 MONTH"; }
-if ('year'  == $time_scope) { $sql6 = "Interval 1 YEAR";  }
+if ('week'  == $time_scope) { $sql6 = "Interval 7 DAY";
+							  $sql7 = ') GROUP BY YEAR(dattim),MONTH(dattim),DAY(dattim),HOUR(dattim);';
+							  }
+if ('month' == $time_scope) { $sql6 = "Interval 1 MONTH";
+							  $sql7 = ') GROUP BY YEAR(dattim),MONTH(dattim),DAY(dattim)';
+								}
+if ('year'  == $time_scope) { $sql6 = "Interval 1 YEAR";
+							  $sql7 = ') GROUP BY YEAR(dattim),MONTH(dattim)';
+								}
 
 $sql = $sql1.$sql2.$sql3.$sql4.$sql5.$sql6.$sql7;
 
@@ -200,7 +231,7 @@ $int_y_step_small = 1;
 			isStacked: false,
 			width: 1400,
 			height: 800,
-			vAxis: {title: "Temperatur (Grad Celsius)", 
+			vAxis: {title: "Temperatur (Grad Celsius)",
               minorGridlines: {count: 3},
               // maxValue: 40,
               minValue: 0
@@ -265,4 +296,4 @@ New window can be forced by adding target="_blank"
  <div  class="anfrage"><a href="avr-google.php?scope=year">JAHR</a></div>
  </div>
 </body>
-</html> 
+</html>
