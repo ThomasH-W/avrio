@@ -1,6 +1,6 @@
 <?php
 // Read MySQL database and build diagram based on google graphics
-// 2013-12-28 V0.7 by Thomas Hoeser
+// 2013-12-28 V0.7a by Thomas Hoeser
 //
 // syntax: avr-google.php[?scope={day|week|month|year}]&[?group={air|water}]
 // avr-google.php?scope=day
