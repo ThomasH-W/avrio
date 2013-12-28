@@ -21,7 +21,7 @@ fwrite($fh, "----------------------------------------------- ");fwrite($fh, "\n"
 // default Values used when config file cannot be found
 $dbhost  = "127.0.0.1";
 $dbuser  = "root";
-$dbpass  = "nxt2008";
+$dbpass  = "rootpassword";
 $dbname  = "avrio";
 $dbtable = "avrdat";
 $dbfield = "Innen, Aussen, Zimmer, Balkon, Wasser, WW_Speicher, Vorlauf, Ruecklauf";
