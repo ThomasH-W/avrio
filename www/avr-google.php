@@ -55,6 +55,8 @@ fwrite($fh, "read options      - ");
 // Handle command line arguments
 $time_scope = $_GET ['scope'];
 fwrite($fh, "scope - ".$time_scope."\n");
+if (''   == $time_scope)
+							{ $time_scope = 'day'; }
 fwrite($fh, "----------------------------------------------- ");fwrite($fh, "\n"); 
 
 
