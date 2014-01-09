@@ -2,7 +2,7 @@
 // Read MySQL database and build diagram based on highcharts graphics
 // Program basis from on Enrico S.
 // http://fluuux.de/2013/02/mit-highcharts-werte-aus-einer-datenbank-visualisieren
-// 2014-01-07 V0.2 by Thomas Hoeser
+// 2014-01-09 V0.3 by Thomas Hoeser
 //
 // Requirements:
 // /var/www/js/scripts/highcharts.js
@@ -13,7 +13,7 @@
 
 //  database + fields are defined in common.inc.php
 /************************************************************************
-  Übersicht aller Sensorwerte der letzten 24 Stunden in einem Chart     *
+  Ãœbersicht aller Sensorwerte der letzten 24 Stunden in einem Chart     *
   Darunter eine Anzeige der zuletzt gespeicherten Werte aller Sensoren  *
   Die Chart-Linien werden als Spline dargestellt.                       *
 ************************************************************************/
@@ -36,9 +36,10 @@ if(!isset($_GET['chartStyle'])) $_GET['chartStyle'] = 1; else $_GET['chartStyle'
 // test scope :
 // $scope='day';
 // $scopeval=3;
+
 $scope= $_GET['scope'];
 $scopeval= $_GET['scopeval'];
-
+if(!is_numeric($scopeval))$scopeval=1;
 $scope_days=1;
 $scope_hours=24;
 
@@ -78,31 +79,33 @@ fwrite($fh, "scopeval    : $scopeval\n");
 
 
 $colors = array('#89A54E','#80699B','#3D96AE','#DB843D','#92A8CD','#A47D7C','#B5CA92');
+// var_dump($_GET['sensors']);
+if(isset($_GET['sensors'])) $SensorNames=$_GET['sensors']; else $SensorNames=$SensorFields;
+$SensorCount  = count($SensorNames);
+foreach ($SensorNames as $value) {
+	$ausgabe .= $value." ,";
+		// echo "Auswahl: $value<br />\n";
+	}#end foreach
+
+fwrite($fh, "sensors     : ");
+fwrite($fh, $ausgabe."\n");
 
 // echo "before getChartValues ... ";
 list($chartValues[], $stundenValues[],$DattimStart,$dataCount) = getChartValues($SensorCount, $scope, $scopeval);
-/*
-echo "after getChartValues<br>";
-
-      for($i=0;$i<=NUMSENSORS;$i++)
-      {        if(!empty($chartValues[0][$i]))
-        {
-         	echo $chartValues[0][$i]."<br>";
-        }
-	  }
-*/
 
 $interval = $scope_days * $scope_hours * 3600 * 1000 / $dataCount;
 fwrite($fh, "scope_days  : $scope_days\n");
 fwrite($fh, "scope_hours : $scope_hours\n");
 fwrite($fh, "dataCount   : $dataCount\n");
 fwrite($fh, "title       : $scope_title\n");
+fwrite($fh, "interval    : $scope_days * $scope_hours * 3600 * 1000 / $dataCount \n");
 fwrite($fh, "interval    : $interval\n");
 // echo "start html ....<br>";
 
 fwrite($fh, "----------------------------------------------- start html ...\n");
 // Datenbankverbindung schliessen
 $db->close();
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -119,20 +122,22 @@ $db->close();
     <script src="scripts/highcharts.js"></script>
 
 <script type="text/javascript">
-$(function () 
+$(function ()
 {
   var chart;
-  
-  $(document).ready(function() 
-  {        
+
+  $(document).ready(function()
+  {
+  	Highcharts.setOptions({
+		global: {
+		useUTC: false
+		}
+    });
 	chart = new Highcharts.Chart(
     {
       chart:
       {
         renderTo: 'container'
-      },
-      global: {
-        useUTC: false
       },
       title:
       {
@@ -242,11 +247,27 @@ $(function ()
   <div id="container"></div>
 </div>
 
- <div  class="anfrage"><a href="avr-highchart.php?scope=hour">STUNDE</a></div>
- <div  class="anfrage"><a href="avr-highchart.php?scope=day">TAG</a></div>
- <div  class="anfrage"><a href="avr-highchart.php?scope=week">WOCHE</a></div>
- <div  class="anfrage"><a href="avr-highchart.php?scope=month">MONAT</a></div>
- <div  class="anfrage"><a href="avr-highchart.php?scope=year">JAHR</a></div>
+<form action="" method="get">
+            <!-- Formular -->
+            <p>Zeitraum:
+					<input type="radio" name="scope" value="hour" />Stunde
+					<input type="radio" name="scope" value="day" CHECKED />Tag
+					<input type="radio" name="scope" value="week" />Woche
+					<input type="radio" name="scope" value="month" />Monat
+					<input type="radio" name="scope" value="year" />Jahr
+				Wert: <input type="text" name="scopeval" /></p>
+
+  <p>
+<?php
+$i=0;
+    foreach($SensorFields AS $name)
+		{ echo '<input type="checkbox" name="sensors[]" value="'.$name.'" CHECKED > '.$name; $i++; }
+
+?>
+  </p>
+  <input type="submit" value="Senden">
+</form>
+
 
 </body>
 </html>

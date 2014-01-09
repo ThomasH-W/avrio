@@ -1,4 +1,5 @@
 <?php
+// 2014-01-09 V0.3 by Thomas Hoeser
 /************************************************
 	Letztes Zeichen hinter einem String entfernen	*
 ************************************************/

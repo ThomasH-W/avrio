@@ -1,16 +1,18 @@
 <?php
+// 2014-01-09 V0.3 by Thomas Hoeser
 define('DB_SERVER',"127.0.0.1");        // local server
 define('DB_USER',"root");
-define('DB_PASSWORD',"rootpw");
+define('DB_PASSWORD',"nxt2008");
 define('DB_NAME',"avrio");
 define('DB_TABLE',"avrdat");
 
 define("listViewTempPeriod", 24); //Anzeige einer Liste aller Temperaturwerte der letzten X Stunden
 
 // list sensors as defined in table avrdat
-$SensorNames = array(Aussen, Wintergarten, Zimmer, Terrasse,Pool, WW_Speicher, Vorlauf, Ruecklauf);
-$SensorCount = count($SensorNames);
-$SensorStyle = array(
+$SensorFields = array(Aussen, Wintergarten, Zimmer, Terrasse,Pool, WW_Speicher, Vorlauf, Ruecklauf);
+$SensorNames  = $SensorFields;
+$SensorCount  = count($SensorNames);
+$SensorStyle  = array(
 	array('line', 'solid', $SensorNames[0], 'D1', '#3366CC'),
 	array('line', 'solid', $SensorNames[1], 'D2', '#DC3912'),
 	array('line', 'solid', $SensorNames[2], 'D3', '#FF9900'),
