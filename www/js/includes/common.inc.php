@@ -2,7 +2,7 @@
 // 2014-01-09 V0.3 by Thomas Hoeser
 define('DB_SERVER',"127.0.0.1");        // local server
 define('DB_USER',"root");
-define('DB_PASSWORD',"nxt2008");
+define('DB_PASSWORD',"rootpw");
 define('DB_NAME',"avrio");
 define('DB_TABLE',"avrdat");
 
