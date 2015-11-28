@@ -1,7 +1,7 @@
 <html>
 <!- 
 // Read MySQL database and display values in a panel
-// 2013-03-27 V0.3 by Thomas Hoeser 
+// 2013-03-27 V0.4 by Thomas Hoeser 
 -->
 <head>
 <!- update the page every 120 seconds -->
@@ -65,23 +65,39 @@ $fh = fopen($myFile, 'w');
 fwrite($fh, "mysql_connect - ");
 // Mit mysql_connect() öffnet man eine Verbindung zu einer MySQL-Datenbank. 
 // Im Erfolgsfall gibt diese Funktion eine Verbindungskennung, sonst false zurück
-mysql_connect($dbhost, $dbuser, $dbpass) or die ('Error connecting to mysql');
-fwrite($fh, "SQL server o.k.\n");
+$mysql_ret = mysql_connect($dbhost, $dbuser, $dbpass);
+if (!$mysql_ret) {
+	echo "<p>Error - cannot connect to sql server</p>";
+	echo "<p>a) test mysql -u".$dbuser." -p".$dbpass." -h ".$dbhost."</p>";
+	echo "<p>b) comment bind-address in /etc/mysql/my.cnf on server</p>";
+	echo "<p>c) GRANT ALL ON avrio.* TO root@'CLIENT_IP_ADDRESS' IDENTIFIED BY '".$dbpass."'</p>";
+	die ('Keine Verbindung zur Datenbank : ' . mysql_error());
+} // mysql_connect
+fwrite($fh, "SQL server ".$dbhost." o.k.\n");
 
 fwrite($fh, "mysql_select_db - ");
 // Mit mysql_select_db() wählt man eine Datenbank aus. 
 // Im Erfolgsfall gibt diese Funktion true, sonst false zurück.
-mysql_select_db($dbname)or die ('Error connecting to database');
-fwrite($fh, "database o.k.\n");
+$mysql_ret = mysql_select_db($dbname);
+if (!$mysql_ret) {
+	echo "<p>Error - cannot open database ".$dbname."</p>";
+	echo "<p>a) test mysql> SHOW DATABASES;</p>";
+	die ('Keine Verbindung zur Datenbank : ' . mysql_error());
+} // mysql_select_db
 
 // SQL Abfrage
 // 1 Datensatz holen
 $query = "SELECT UNIX_TIMESTAMP(dattim),Aussen, Wintergarten, Zimmer, Terrasse, Pool, WW_Speicher, Vorlauf, Ruecklauf FROM avrdat ORDER BY dattim DESC LIMIT 1";
 
-$result = mysql_query($query);
-fwrite($fh, $result); fwrite($fh, "\n");
+$mysql_ret = mysql_query($query);
+if (!$mysql_ret) {
+	echo "<p>Error - invalid query on database ".$dbname."</p>";
+	echo "<p>a) test mysql> USE ".$dbname.";DESC avrdat;</p>";
+	die('Ungültige Anfrage: ' . mysql_error());
+} 
+fwrite($fh, $mysql_ret); fwrite($fh, "\n");
 
-$array = mysql_fetch_array($result);  
+$array = mysql_fetch_array($mysql_ret);  
 
 // get date
 fwrite($fh, $array[0]); fwrite($fh, "\n");
