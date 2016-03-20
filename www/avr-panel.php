@@ -1,7 +1,7 @@
 <html>
 <!- 
 // Read MySQL database and display values in a panel
-// 2013-03-27 V0.4 by Thomas Hoeser 
+// 2015-11-28 V0.4 by Thomas Hoeser 
 -->
 <head>
 <!- update the page every 120 seconds -->

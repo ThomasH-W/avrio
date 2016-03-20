@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
-# 2013-04-19 V0.5 by Thomas Hoeser
+# 2016-03-20 V0.5 by Thomas Hoeser
+#
+# update: write_database() initialize Sen_String = ''
 #
 #Embedded file name: /home/pi/avrio/avrio_database.py
 import MySQLdb
@@ -147,7 +149,8 @@ def write_database(read_items, sensordata, sensor_dict, db_all, verbose_level):
     comb1 = []
     comb2 = []
     Val_String = ''
-    
+    Sen_String = ''   
+	
     db_Table = db_all[0]
     db_Database = db_all[1]
     db_Host = db_all[2]
