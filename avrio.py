@@ -222,17 +222,17 @@ def add_config():
   file_config.write("# ----------------------------------------\n")
 
   sensor_count = 0
-  if verbose_level>0: print "Open 1-wire slaves list for reading"
-  file = open('/sys/devices/w1_bus_master1/w1_master_slaves')
+  if verbose_level>0: print "Open 1-wire subordinates list for reading"
+  file = open('/sys/devices/w1_bus_main1/w1_main_subordinates')
 
-  w1_slaves = file.readlines()            # Read 1-wire slaves list
-  file.close()                            # Close 1-wire slaves list
+  w1_subordinates = file.readlines()            # Read 1-wire subordinates list
+  file.close()                            # Close 1-wire subordinates list
   
-  # Repeat following steps with each 1-wire slave
-  for line in w1_slaves:
-    w1_slave = line.split("\n")[0]        # Extract 1-wire slave
-    if verbose_level>0: print w1_slave
-    file_config.write("#Sensor " + w1_slave + "\n")
+  # Repeat following steps with each 1-wire subordinate
+  for line in w1_subordinates:
+    w1_subordinate = line.split("\n")[0]        # Extract 1-wire subordinate
+    if verbose_level>0: print w1_subordinate
+    file_config.write("#Sensor " + w1_subordinate + "\n")
 
   file.close()
   
@@ -294,14 +294,14 @@ def write_config():
     file_config.write("# Syntax: \n# Sensor [Sensor ID] [Sensor Field in Database]\n")
     file_config.write("# ----------------------------------------\n")
     print
-    print "look for connected sensors in /sys/devices/w1_bus_master1/w1_master_slaves"
-    file = open('/sys/devices/w1_bus_master1/w1_master_slaves')
-    w1_slaves = file.readlines()
+    print "look for connected sensors in /sys/devices/w1_bus_main1/w1_main_subordinates"
+    file = open('/sys/devices/w1_bus_main1/w1_main_subordinates')
+    w1_subordinates = file.readlines()
     file.close()
-    for line in w1_slaves:
-      w1_slave = line.split("\n")[0]
-      if verbose_level: print w1_slave  
-      file_config.write("Sensor " + w1_slave + " tbd\n")
+    for line in w1_subordinates:
+      w1_subordinate = line.split("\n")[0]
+      if verbose_level: print w1_subordinate  
+      file_config.write("Sensor " + w1_subordinate + " tbd\n")
     file_config.close
   else:
     print "request cancelled"
@@ -310,13 +310,13 @@ def write_config():
   return(0)
 
 #-------------------------------------------------------------------------------------------
-def read_sensor(sensor_slave):
-  # Open 1-wire slave file
-  sensor_device = '/sys/bus/w1/devices/' + str(sensor_slave) + '/w1_slave'
+def read_sensor(sensor_subordinate):
+  # Open 1-wire subordinate file
+  sensor_device = '/sys/bus/w1/devices/' + str(sensor_subordinate) + '/w1_subordinate'
   try:
 	file = open(sensor_device)
-	filecontent = file.read()                              # Read content from 1-wire slave file
-	file.close()                                           # Close 1-wire slave file
+	filecontent = file.read()                              # Read content from 1-wire subordinate file
+	file.close()                                           # Close 1-wire subordinate file
 	stringvalue = filecontent.split("\n")[1].split(" ")[9] # Extract temperature string
 	if stringvalue[0].find("YES") > 0:
 		temperature = error_temp
@@ -324,9 +324,9 @@ def read_sensor(sensor_slave):
 		temperature = float(stringvalue[2:]) / 1000            # Convert temperature value
     
   except IOError:
-     print "PANIC read_sensor - Cannot find file >" + sensor_slave + "< in /sys/bus/w1/devices/"
+     print "PANIC read_sensor - Cannot find file >" + sensor_subordinate + "< in /sys/bus/w1/devices/"
      print "No sensor attached"
-     print "check with > cat /sys/devices/w1_bus_master1/w1_master_slaves"
+     print "check with > cat /sys/devices/w1_bus_main1/w1_main_subordinates"
      sys.exit(1) 
     
   return(temperature) # exit function read_sensor
@@ -334,46 +334,46 @@ def read_sensor(sensor_slave):
 #-------------------------------------------------------------------------------------------
 def read_sensors(read_level):
  sensor_count = 0
- sensor_slaves = '/sys/devices/w1_bus_master1/w1_master_slaves'
- # Open 1-wire slaves list for reading
+ sensor_subordinates = '/sys/devices/w1_bus_main1/w1_main_subordinates'
+ # Open 1-wire subordinates list for reading
  try: 
-  file = open(sensor_slaves)
+  file = open(sensor_subordinates)
 
-  w1_slaves = file.readlines()            # Read 1-wire slaves list
-  file.close()                            # Close 1-wire slaves list
+  w1_subordinates = file.readlines()            # Read 1-wire subordinates list
+  file.close()                            # Close 1-wire subordinates list
 
   # Print header for results table
   if verbose_level>0: print('Sensor ID       | Temperature')
   if verbose_level>0: print('-----------------------------')
   
-  # Repeat following steps with each 1-wire slave
-  for line in w1_slaves:
-    w1_slave = line.split("\n")[0]        # Extract 1-wire slave
+  # Repeat following steps with each 1-wire subordinate
+  for line in w1_subordinates:
+    w1_subordinate = line.split("\n")[0]        # Extract 1-wire subordinate
     time.sleep(0.2)
-    temperature = read_sensor( w1_slave)  # call read function
+    temperature = read_sensor( w1_subordinate)  # call read function
     
     if temperature >= dead_lo and temperature <= dead_hi or temperature > dead_max:  # check for faulty data
       if verbose_level>1:print "Panic", temperature
       time.sleep(0.5)
-      temperature = read_sensor( w1_slave)
+      temperature = read_sensor( w1_subordinate)
       if verbose_level>1:print "2nd try", temperature
       
     if temperature >= dead_lo and temperature <= dead_hi or temperature> dead_max:  # check for faulty data
       if verbose_level>0:print "Panic", temperature
       time.sleep(1.5)
-      temperature = read_sensor( w1_slave)
+      temperature = read_sensor( w1_subordinate)
       if verbose_level>0:print "3rd try", temperature
         
-    if verbose_level>0: print(str(w1_slave) + ' | %5.3f °C' % temperature) # Print temperature
+    if verbose_level>0: print(str(w1_subordinate) + ' | %5.3f °C' % temperature) # Print temperature
     sensor_count = sensor_count + 1
 
-    if read_level:sensordata.append((w1_slave, temperature)) # store temperature in database
+    if read_level:sensordata.append((w1_subordinate, temperature)) # store temperature in database
   if verbose_level>2: print "sensors detected: ", sensor_count
   return(sensor_count) # exit function read_sensors
 
  except IOError:
     print "----------------------" , jetzt
-    print "read_sensors - Cannot find file: " , sensor_slaves
+    print "read_sensors - Cannot find file: " , sensor_subordinates
  return(0)
 
     
